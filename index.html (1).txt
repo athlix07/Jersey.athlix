@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Athlix Store</title>
+
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0e0e0e;
+    color:white;
+}
+header{
+    display:flex;
+    justify-content:space-between;
+    padding:15px 8%;
+    background:#111;
+    align-items:center;
+}
+.logo{
+    color:#00ff88;
+    font-size:22px;
+    font-weight:bold;
+    cursor:pointer;
+}
+.products{
+    padding:40px 8%;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+}
+.card{
+    background:#1a1a1a;
+    padding:15px;
+    border-radius:8px;
+    text-align:center;
+}
+.card img{
+    width:100%;
+    border-radius:6px;
+}
+button{
+    padding:8px 12px;
+    background:#00ff88;
+    border:none;
+    margin-top:8px;
+    cursor:pointer;
+    font-weight:bold;
+}
+.hidden{
+    display:none;
+}
+.admin-panel{
+    padding:30px 8%;
+}
+input{
+    width:100%;
+    padding:8px;
+    margin:5px 0;
+}
+footer{
+    text-align:center;
+    padding:15px;
+    background:#111;
+}
+</style>
+</head>
+
+
+<body>
+
+
+<header>
+<div class="logo" onclick="secretAdmin()">ATHLIX</div>
+<div>
+🛒 Cart (<span id="cartCount">0</span>)
+</div>
+</header>
+
+
+<!-- STORE -->
+<div id="store">
+<div class="products" id="productList"></div>
+</div>
+
+
+<!-- ADMIN PANEL -->
+<div id="adminPage" class="hidden admin-panel">
+<h2>Admin Dashboard</h2>
+
+
+<h3>Add Product</h3>
+<input type="text" id="pname" placeholder="Product Name">
+<input type="number" id="pprice" placeholder="Price">
+<input type="text" id="pimg" placeholder="Image URL">
+<button onclick="addProduct()">Add Product</button>
+
+
+<h3>All Products</h3>
+<div id="adminProducts"></div>
+
+
+<button onclick="closeAdmin()">Close Admin</button>
+</div>
+
+
+<footer>© 2026 Athlix Store</footer>
+
+
+<script>
+
+
+// DEFAULT PRODUCTS
+let products = JSON.parse(localStorage.getItem("products")) || [
+{ id:1, name:"Athlix Pro Jersey", price:1299, img:"https://via.placeholder.com/300" },
+{ id:2, name:"Athlix Elite Tee", price:899, img:"https://via.placeholder.com/300" }
+];
+
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+
+function saveData(){
+localStorage.setItem("products", JSON.stringify(products));
+localStorage.setItem("cart", JSON.stringify(cart));
+}
+
+
+function renderProducts(){
+let html="";
+products.forEach(p=>{
+html+=`
+<div class="card">
+<img src="${p.img}">
+<h3>${p.name}</h3>
+<p>₹${p.price}</p>
+<button onclick="addToCart(${p.id})">Add to Cart</button>
+</div>
+`;
+});
+document.getElementById("productList").innerHTML=html;
+updateCartCount();
+}
+
+
+function addToCart(id){
+let product = products.find(p=>p.id===id);
+cart.push(product);
+saveData();
+updateCartCount();
+alert("Added to cart");
+}
+
+
+function updateCartCount(){
+document.getElementById("cartCount").innerText=cart.length;
+}
+
+
+// SECRET ADMIN (CLICK LOGO)
+function secretAdmin(){
+let pass=prompt("Enter Admin Password:");
+if(pass==="athlix123"){
+document.getElementById("store").classList.add("hidden");
+document.getElementById("adminPage").classList.remove("hidden");
+renderAdminProducts();
+}else{
+alert("Wrong password");
+}
+}
+
+
+function closeAdmin(){
+document.getElementById("store").classList.remove("hidden");
+document.getElementById("adminPage").classList.add("hidden");
+}
+
+
+// ADD PRODUCT
+function addProduct(){
+let name=document.getElementById("pname").value;
+let price=parseInt(document.getElementById("pprice").value);
+let img=document.getElementById("pimg").value;
+
+
+if(!name || !price || !img){
+alert("Fill all fields");
+return;
+}
+
+
+let newProduct={
+id:Date.now(),
+name:name,
+price:price,
+img:img
+};
+
+
+products.push(newProduct);
+saveData();
+renderProducts();
+renderAdminProducts();
+alert("Product Added");
+}
+
+
+// DELETE PRODUCT
+function deleteProduct(id){
+products = products.filter(p=>p.id!==id);
+saveData();
+renderProducts();
+renderAdminProducts();
+}
+
+
+function renderAdminProducts(){
+let html="";
+products.forEach(p=>{
+html+=`
+<p>${p.name} - ₹${p.price}
+<button onclick="deleteProduct(${p.id})">Delete</button></p>
+`;
+});
+document.getElementById("adminProducts").innerHTML=html;
+}
+
+
+renderProducts();
+
+
+</script>
+
+
+</body>
+</html>
